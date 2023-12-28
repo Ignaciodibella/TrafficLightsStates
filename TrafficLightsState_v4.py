@@ -37,6 +37,9 @@ def homografia(frame_previo, frame_actual):
     matches = flann.knnMatch(descriptor1,descriptor2,k=nNeighbors)
 
     goodMatches = []
+    scale_x = 1.0
+    scale_y = 1.0
+
     for m,n in matches:
         if m.distance < 0.2*n.distance:
             goodMatches.append(m)
@@ -47,7 +50,7 @@ def homografia(frame_previo, frame_actual):
         srcPts = np.float32([ keypoints1[m.queryIdx].pt for m in goodMatches ]).reshape(-1,1,2) 
         dstPts = np.float32([ keypoints2[m.trainIdx].pt for m in goodMatches ]).reshape(-1,1,2)
         errorThreshold = 5
-        M, mask = cv.findHomography(srcPts,dstPts,cv.RANSAC,errorThreshold)
+        M, _ = cv.findHomography(srcPts,dstPts,cv.RANSAC,errorThreshold)
 
         scale_x = M[0, 0]
         scale_y = M[1, 1]
@@ -208,7 +211,7 @@ if __name__ == '__main__':
     cap = cv.VideoCapture(video_path)
 
     # Para usar una cámara de video en tiempo real:
-    # cap = cv2.VideoCapture(0)
+    # cap = cv.VideoCapture(0)
 
     datos_guardados = input("Quiere usar las ROI definidas anteriormente: [s/n] ")
     frame_previo = None
@@ -250,7 +253,7 @@ if __name__ == '__main__':
     if frame_previo is None or np.array_equal(frame_previo, None):
         frame_previo = cv.imread('frame_previo.jpg')
 
-    k_muestreo = 10 # Si k_muestreo = 1, entonces se evaluan todos los fotogramas
+    k_muestreo = 30 # Si k_muestreo = 1, entonces se evaluan todos los fotogramas
     # k = 1 --> 180.55 segundos
     # k = 5 --> 42.20 segundos
     # k = 10 --> 24.33 segundos
