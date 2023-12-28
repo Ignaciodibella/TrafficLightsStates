@@ -242,7 +242,7 @@ if __name__ == '__main__':
         frame_previo = frame
         cv.imwrite('frame_previo.jpg', frame)
 
-        # Lectura de coordenadas y dimensiones de las ROIs
+        # Persistir de coordenadas y dimensiones de las ROIs
         with open("rois.txt", "w") as file:
             for roi in rois:
                 file.write(','.join(map(str, roi)) + '\n')
@@ -256,6 +256,7 @@ if __name__ == '__main__':
     # k = 10 --> 24.33 segundos
 
     contador_intervalos = 0
+    primera_iteracion = True
 
     while True:
         ret, frame = cap.read()
@@ -263,7 +264,13 @@ if __name__ == '__main__':
             break
 
         contador_intervalos += 1
-        # Verificar cambio de resolución - Esto puede ocurrir antes de la ejecución, pero no durante. Hay que guardarla con las ultimas ROI en el txt
+
+        # Verificar cambio de resolución - Esto puede ocurrir antes de la ejecución, pero no durante.
+        if primera_iteracion:
+            if frame_previo.shape != frame.shape: # Se cambió la resolución
+                escala_x = frame_previo.shape[1]/frame.shape[1]
+                escala_y = frame_previo.shape[0]/frame.shape[0]
+                rois = ajustarPosicionRois(rois, frame, escala_x, escala_y)
 
         # Verificar cambio de zoom/escala - Esto puede ocurrir antes y/o durante la ejecución
         if contador_intervalos == k_muestreo:
